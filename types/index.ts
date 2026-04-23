@@ -19,8 +19,6 @@ export interface Subscription {
   user_id: string;
   plan: SubPlan;
   status: SubStatus;
-  stripe_subscription_id?: string;
-  stripe_customer_id?: string;
   current_period_start: string;
   current_period_end: string;
   charity_id?: string;

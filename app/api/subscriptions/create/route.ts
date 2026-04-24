@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { razorpay, PLANS } from '@/lib/razorpay';
+import { PLANS } from '@/lib/razorpay';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +21,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    /* ✅ Lazy load Razorpay (fixes Vercel build crash) */
+    const Razorpay = (await import('razorpay')).default;
+
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error('Razorpay keys not configured');
+    }
+
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
     const order = await razorpay.orders.create({
       amount: planConfig.amount_paise,
       currency: 'INR',
@@ -37,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   } catch (err: unknown) {
     const message =
-      err instanceof Error ? err.message : "Internal Server Error";
+      err instanceof Error ? err.message : 'Internal Server Error';
 
     return NextResponse.json(
       { error: message },
